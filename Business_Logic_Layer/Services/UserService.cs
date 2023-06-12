@@ -36,8 +36,8 @@ namespace Business_Logic_Layer.Services
         }
         public async Task<bool> Register(User_DTO request)
         {
-            var isTheUsernameUnique=await _userRepository.CheckUserName(request.UserName);
-            if(!isTheUsernameUnique)
+            var isTheUsernameUnique=await _userRepository.CheckUserNameAsync(request.UserName);
+            if(isTheUsernameUnique)
             {
                 throw new ValidationException("Bu kullanıcı adı başkası tarafından kullanılmakta.");
             }
@@ -69,11 +69,13 @@ namespace Business_Logic_Layer.Services
             var validator = new LoginValidator();
             validator.ValidateAndThrow(request);
 
-            var user = await _userRepository.Login(request);
-            if (user == null)
+            var isThereUser = await _userRepository.CheckUserNameAsync(request.UserName);
+            if (!isThereUser)
             {
-                return "Login failed";
+                throw new ValidationException("Kullanıcı bulunamadı...");
             }
+
+            var user = await _userRepository.Login(request);
             string token = CreateToken(user);
             return token;
         }

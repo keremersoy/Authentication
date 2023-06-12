@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -41,22 +43,13 @@ namespace Data_Access_Layer.Repository.UserRepository
 
         public async Task<bool> Register(User request)
         {
-            try
+            var result = await _context.AddAsync(request);
+            if (result != null)
             {
-
-                var result = await _context.AddAsync(request);
-                if (result != null)
-                {
-                    var inserted = await _context.SaveChangesAsync();
-                    return inserted == 1;
-                }
-                return false;
+                var inserted = await _context.SaveChangesAsync();
+                return inserted == 1;
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                return false;
-            }
+            return false;
         }
         public async Task<User> Login(User_DTO request)
         {
@@ -67,11 +60,11 @@ namespace Data_Access_Layer.Repository.UserRepository
             var pass = Encoding.Default.GetString(VerifyPasswordHash(request.Password, user.PasswordSalt));
             var userpass = Encoding.Default.GetString(user.PasswordHash);
 
-            if (pass.Equals(userpass))
+            if (!pass.Equals(userpass))
             {
-                return user;
+                throw new AuthenticationException("Yanlış parola.");
             }
-            return null;
+            return user;
         }
         public byte[] VerifyPasswordHash(string password, byte[] passwordSalt)
         {
@@ -81,9 +74,11 @@ namespace Data_Access_Layer.Repository.UserRepository
                 return computedHash;
             }
         }
-        public async Task<bool>  CheckUserName(String username) {
-            var result=await _context.Users.AnyAsync(x => x.UserName == username);
-            return !result;
+
+        public async Task<bool> CheckUserNameAsync(String username)
+        {
+            var result = await _context.Users.AnyAsync(x => x.UserName == username);
+            return result;
         }
     }
 }

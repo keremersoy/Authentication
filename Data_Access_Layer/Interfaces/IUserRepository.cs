@@ -14,7 +14,7 @@ namespace Data_Access_Layer.Interfaces
         Task<IEnumerable<User>> GetUser();
         Task<bool> Register(User request);
         Task<User> Login(User_DTO request);
-        Task<bool> CheckUserName(String username);
+        Task<bool> CheckUserNameAsync(String username);
     }
 }
 

@@ -23,7 +23,7 @@ namespace WEB_API.Extensions
                     {
                         logger.LogError(contextFeature.Error.Message);
 
-                        context.Response.WriteAsync(JsonSerializer.Serialize(new
+                        await context.Response.WriteAsync(JsonSerializer.Serialize(new
                         {
                             StatusCode = context.Response.StatusCode,
                             Message = contextFeature.Error.Message,
